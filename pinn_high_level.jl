@@ -1,4 +1,4 @@
-using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux, Plots
+using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux
 using Quadrature,Cubature
 import ModelingToolkit: Interval, infimum, supremum
 
@@ -19,7 +19,7 @@ R_n = 1.6192e-5
 
 I = 1.0 #(A)
 
-# Equations (need fixing)
+# Equations
 eqs = [
     Dt(c_sp_bar(r,t)) ~ (-3)*(I/(F*S_p))/R_p,
     Dt(c_sn_bar(r,t)) ~ (-3)*(I/(F*S_n))/R_n,
@@ -27,7 +27,7 @@ eqs = [
     Dt(q_n_bar(r,t)) + 30*(D_sn/(R_n)^2)*q_s_bar(r,t) + (45/2)*((I/(F*S_n))/R_n^2) ~ 0, 
 ]
 
-# Conditions (need fixing)
+# Conditions
 bcs = [
     Dr(c_sp(0,t)) ~ 0,
     Dr(c_sn(0,t)) ~ 0,
@@ -40,7 +40,7 @@ bcs = [
 ]
 
 
-# Domains (need fixing)
+# Domains
 domains = [
     t ∈ Interval(0.0, 1.0),
     r ∈ Interval(0.0, R_n)
