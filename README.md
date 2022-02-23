@@ -3,6 +3,7 @@ Physics-informed neural network for battery modeling in REX project
 
 ## reference
 
+The PINN code structures are based on the Julia tutorial:
 https://neuralpde.sciml.ai/stable/pinn/system/
 
 Cen, Z, Kubiak, P. Lithium-ion battery SOC/SOH adaptive estimation via simplified single particle model. Int J Energy Res. 2020; 44: 12444– 12459. https://doi.org/10.1002/er.5374
