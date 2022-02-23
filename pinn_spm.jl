@@ -1,3 +1,6 @@
+# Reference: https://neuralpde.sciml.ai/stable/pinn/system/
+#            Marquis, S. G., Sulzer, V., Timms, R., Please, C. P., & Chapman, S. J. (2019). An asymptotic derivation of a single particle model with electrolyte. arXiv [physics.chem-ph]. Opgehaal van http://arxiv.org/abs/1905.12553
+
 using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux
 using Quadrature,Cubature
 import ModelingToolkit: Interval, infimum, supremum

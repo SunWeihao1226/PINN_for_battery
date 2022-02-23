@@ -1,3 +1,6 @@
+# Reference: https://neuralpde.sciml.ai/stable/pinn/system/
+#            Cen, Z, Kubiak, P. Lithium-ion battery SOC/SOH adaptive estimation via simplified single particle model. Int J Energy Res. 2020; 44: 12444– 12459. https://doi.org/10.1002/er.5374
+
 using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux
 using Quadrature,Cubature
 import ModelingToolkit: Interval, infimum, supremum
