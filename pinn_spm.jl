@@ -6,7 +6,7 @@ using Quadrature,Cubature
 import ModelingToolkit: Interval, infimum, supremum
 
 @parameters t, r
-@variables c_sn_bar(..), c_sp_bar(..), c_sp(..), c_sn(..)
+@variables c_sp(..), c_sn(..)
 Dt = Differential(t)
 Dr = Differential(r)
 
@@ -24,8 +24,8 @@ I = 1.0
 
 # Equations
 eqs = [
-    C_p*Dt(c_sp_bar(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sp_bar(r,t))),
-    C_n*Dt(c_sp_bar(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sn_bar(r,t)))
+    C_p*Dt(c_sp(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sp(r,t))),
+    C_n*Dt(c_sp(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sn(r,t)))
 
 ]
 
@@ -33,8 +33,8 @@ eqs = [
 bcs = [
     Dr(c_sp(0,t)) ~ 0,
     Dr(c_sn(0,t)) ~ 0,
-    -((a_p*y_p)/(C_p))*Dr(c_sp(1,t)) ~ -I/(L_p),
-    -((a_n*y_n)/(C_n))*Dr(c_sn(1,t)) ~ I/(L_n), 
+    ((a_p*y_p)/(C_p))*Dr(c_sp(1,t)) ~ I/(L_p),
+    ((a_n*y_n)/(C_n))*Dr(c_sn(1,t)) ~ -I/(L_n), 
     c_sp(r,0) ~ 0.6,
     c_sn(r,0) ~ 0.8
 ]
@@ -50,13 +50,13 @@ domains = [
 # Neural network
 input_ = length(domains)
 n = 15
-chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:4]
+chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:2]
 initθ = map(c -> Float64.(c), DiffEqFlux.initial_params.(chain))
 
 _strategy = QuadratureTraining()
 discretization = PhysicsInformedNN(chain, _strategy, init_params=initθ)
 
-@named pde_system = PDESystem(eqs,bcs, domains, [r,t], [c_sn_bar(r,t), c_sp_bar(r,t), c_sp(r,t), c_sn(r,t)])
+@named pde_system = PDESystem(eqs,bcs, domains, [r,t], [c_sp(r,t), c_sn(r,t)])
 prob = discretize(pde_system, discretization)
 sys_prob = symbolic_discretize(pde_system, discretization)
 
