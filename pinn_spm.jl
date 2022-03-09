@@ -24,39 +24,42 @@ I = 1.0
 
 # Equations
 eqs = [
-    C_p*Dt(c_sp(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sp(r,t))),
-    C_n*Dt(c_sp(r,t)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sn(r,t)))
-
+    C_p*Dt(c_sp(t,r)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sp(t,r))),
+    C_n*Dt(c_sn(t,r)) ~ (1/(r)^2)*Dr(((r)^2)*Dr(c_sn(t,r)))
 ]
 
-# Conditions
+# Initial and boundary conditions
 bcs = [
-    Dr(c_sp(0,t)) ~ 0,
-    Dr(c_sn(0,t)) ~ 0,
-    ((a_p*y_p)/(C_p))*Dr(c_sp(1,t)) ~ I/(L_p),
-    ((a_n*y_n)/(C_n))*Dr(c_sn(1,t)) ~ -I/(L_n), 
-    c_sp(r,0) ~ 0.6,
-    c_sn(r,0) ~ 0.8
+    Dr(c_sp(t,0)) ~ 0,
+    Dr(c_sn(t,0)) ~ 0,
+    ((a_p*y_p)/(C_p))*Dr(c_sp(t,1)) ~ I/(L_p),
+    ((a_n*y_n)/(C_n))*Dr(c_sn(t,1)) ~ -I/(L_n), 
+    c_sp(0,r) ~ 0.6,
+    c_sn(0,r) ~ 0.8
 ]
 
 
 # Domains
 domains = [
     t ∈ Interval(0.0, 1.0),
-    r ∈ Interval(0.0, L_n)
+    r ∈ Interval(0.0, 1.0),
 ]
+
+# Discretization
+dt = 0.1
 
 
 # Neural network
 input_ = length(domains)
-n = 15
+n = 30
 chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:2]
 initθ = map(c -> Float64.(c), DiffEqFlux.initial_params.(chain))
+# initθ = Float64.(DiffEqFlux.initial_params(chain))
 
 _strategy = QuadratureTraining()
 discretization = PhysicsInformedNN(chain, _strategy, init_params=initθ)
 
-@named pde_system = PDESystem(eqs,bcs, domains, [r,t], [c_sp(r,t), c_sn(r,t)])
+@named pde_system = PDESystem(eqs,bcs, domains, [t,r], [c_sp(t,r), c_sn(t,r)])
 prob = discretize(pde_system, discretization)
 sys_prob = symbolic_discretize(pde_system, discretization)
 
@@ -65,11 +68,32 @@ bcs_inner_loss_functions = prob.f.f.loss_function.bcs_loss_function.bc_loss_func
 
 cb = function (p,l)
     println("loss: ", l)
-    println("pde_losses: ", map(l_ -> l_(p), pde_inner_loss_functions))
-    println("bcs_losses: ", map(l_ -> l_(p), bcs_inner_loss_functions))
+    # println("pde_losses: ", map(l_ -> l_(p), pde_inner_loss_functions))
+    # println("bcs_losses: ", map(l_ -> l_(p), bcs_inner_loss_functions))
     return false
 end
 
 res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=10)
 
-# phi = discretization.phi
+phi = discretization.phi
+
+
+ts,rs = [infimum(d.domain):dt:supremum(d.domain) for d in domains]
+
+acum =  [0;accumulate(+, length.(initθ))]
+sep = [acum[i]+1 : acum[i+1] for i in 1:length(acum)-1]
+minimizers_ = [res.minimizer[s] for s in sep]
+
+c_sp_predict  = [phi[1]([t,r],minimizers_[1])[1] for t in ts  for r in rs]
+c_sn_predict  = [phi[2]([t,r],minimizers_[2])[1] for t in ts  for r in rs]
+
+println(c_sp_predict)
+println(size(c_sp_predict))
+println(size(c_sn_predict))
+
+# ts,rs = [infimum(d.domain):dt/10:supremum(d.domain) for d in domains]
+
+
+# u_predict = reshape([first(phi([t,r],res.minimizer)) for t in ts for r in rs],(length(ts),length(rs)))
+
+
