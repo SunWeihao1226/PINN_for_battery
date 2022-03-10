@@ -59,14 +59,5 @@ prob = ModelingToolkit.discretize(pdesys, discretization)
 
 # Solution of the ODE system
 sol = solve(prob,Tsit5())
-println(sol)
-println(size(sol))
 
 
-# phi = discretization.phi
-
-# ts,rs = [infimum(d.domain):dt/10:supremum(d.domain) for d in domains]
-
-# u_real = reshape([first(phi([t,r],sol.minimizer)) for t in ts for r in rs], (length(ts),length(yr)))
-
-# u_predict = reshape([first(phi([x,y],res.minimizer)) for x in xs for y in ys],(length(xs),length(ys)))

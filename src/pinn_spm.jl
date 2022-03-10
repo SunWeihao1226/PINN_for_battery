@@ -2,7 +2,7 @@
 #            Marquis, S. G., Sulzer, V., Timms, R., Please, C. P., & Chapman, S. J. (2019). An asymptotic derivation of a single particle model with electrolyte. arXiv [physics.chem-ph]. Opgehaal van http://arxiv.org/abs/1905.12553
 
 using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux
-using Quadrature,Cubature
+using Quadrature,Cubature,Plots
 import ModelingToolkit: Interval, infimum, supremum
 
 @parameters t, r
@@ -87,23 +87,7 @@ minimizers_ = [res.minimizer[s] for s in sep]
 c_sp_predict  = [phi[1]([t,r],minimizers_[1])[1] for t in ts  for r in rs]
 c_sn_predict  = [phi[2]([t,r],minimizers_[2])[1] for t in ts  for r in rs]
 
-println(c_sp_predict)
-println(c_sn_predict)
-println(size(c_sp_predict))
-println(size(c_sn_predict))
-
-using Plots
-
-c_sp_plt = plot(c_sp_predict, fmt = :png, title="c_sp predict", label = "c_sp")
-c_sn_plt = plot(c_sn_predict, fmt = :png, title="c_sn predict", label = "c_sn")
-
-savefig(c_sp_plt,"../plots/c_sp_predict.png")
-savefig(c_sn_plt,"../plots/c_sn_predict.png")
 
 
-# ts,rs = [infimum(d.domain):dt/10:supremum(d.domain) for d in domains]
-
-
-# u_predict = reshape([first(phi([t,r],res.minimizer)) for t in ts for r in rs],(length(ts),length(rs)))
 
 
