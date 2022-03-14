@@ -60,4 +60,13 @@ prob = ModelingToolkit.discretize(pdesys, discretization)
 # Solution of the ODE system
 sol = solve(prob,Tsit5())
 
+sol_c_sn_dt = []
+sol_c_sp_dt = []
+for i in (1:11)
+    # println(sol[11*(i-1)+1:11*(i)])
+    append!(sol_c_sn_dt, [sol[11*(i-1)+1:11*(i)]])
+    append!(sol_c_sp_dt, [sol[121+(11*(i-1)+1):121+11*(i)]])
+    i=i+1
+end
+
 

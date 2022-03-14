@@ -51,7 +51,7 @@ dt = 0.1
 
 # Neural network
 input_ = length(domains)
-n = 30
+n = 15
 chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:2]
 initθ = map(c -> Float64.(c), DiffEqFlux.initial_params.(chain))
 # initθ = Float64.(DiffEqFlux.initial_params(chain))
@@ -63,29 +63,70 @@ discretization = PhysicsInformedNN(chain, _strategy, init_params=initθ)
 prob = discretize(pde_system, discretization)
 sys_prob = symbolic_discretize(pde_system, discretization)
 
-pde_inner_loss_functions = prob.f.f.loss_function.pde_loss_function.pde_loss_functions.contents
-bcs_inner_loss_functions = prob.f.f.loss_function.bcs_loss_function.bc_loss_functions.contents
+
+
+# pde_inner_loss_functions = prob.f.f.loss_function.pde_loss_function.pde_loss_functions.contents
+# bcs_inner_loss_functions = prob.f.f.loss_function.bcs_loss_function.bc_loss_functions.contents
 
 cb = function (p,l)
-    println("loss: ", l)
+    println("Current loss: ", l)
     # println("pde_losses: ", map(l_ -> l_(p), pde_inner_loss_functions))
     # println("bcs_losses: ", map(l_ -> l_(p), bcs_inner_loss_functions))
     return false
 end
 
-res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=10)
+res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=100)
 
 phi = discretization.phi
 
 
 ts,rs = [infimum(d.domain):dt:supremum(d.domain) for d in domains]
+# ts=[0:0.1:1]
+# rs=[0:0.1:1]
 
-acum =  [0;accumulate(+, length.(initθ))]
-sep = [acum[i]+1 : acum[i+1] for i in 1:length(acum)-1]
-minimizers_ = [res.minimizer[s] for s in sep]
+
+# acum =  [0;accumulate(+, length.(initθ))]
+# sep = [acum[i]+1 : acum[i+1] for i in 1:length(acum)-1]
+# minimizers_ = [res.minimizer[s] for s in sep]
+minimizers_=[]
+append!(minimizers_, [res.minimizer[1:trunc(Int,size(res.minimizer)[1]/2)]])
+append!(minimizers_, [res.minimizer[trunc(Int,size(res.minimizer)[1]/2+1):size(res.minimizer)[1]]])
 
 c_sp_predict  = [phi[1]([t,r],minimizers_[1])[1] for t in ts  for r in rs]
 c_sn_predict  = [phi[2]([t,r],minimizers_[2])[1] for t in ts  for r in rs]
+
+# Extract dt and dr from two prediction variables
+pred_c_sp_row = []
+pred_c_sn_row = []
+for j in (1:11)
+    for k in (1:11)
+        append!(pred_c_sp_row, c_sp_predict[j+11*(k-1)])
+        append!(pred_c_sn_row, c_sn_predict[j+11*(k-1)])
+        k = k+1
+    end
+    j = j+1
+end
+
+pred_c_sp_dt = []
+pred_c_sn_dt = []
+for i in (1:11)
+    append!(pred_c_sp_dt, [pred_c_sp_row[11*(i-1)+1:11*(i)]])
+    append!(pred_c_sn_dt, [pred_c_sn_row[11*(i-1)+1:11*(i)]])
+    i=i+1
+end
+
+pred_c_sp_dr = []
+pred_c_sn_dr = []
+for m in (1:11)
+    append!(pred_c_sp_dr, [c_sp_predict[11*(m-1)+1:11*(m)]])
+    append!(pred_c_sn_dr, [c_sn_predict[11*(m-1)+1:11*(m)]])
+    m=m+1
+end
+
+
+
+# println(c_sp_predict)
+# println(c_sn_predict)
 
 
 
