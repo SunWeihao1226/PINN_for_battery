@@ -83,7 +83,7 @@ phi = discretization.phi
 ts,rs = [infimum(d.domain):dt:supremum(d.domain) for d in domains]
 # ts=[0:0.1:1]
 # rs=[0:0.1:1]
-
+x_axis = collect(ts)
 
 # acum =  [0;accumulate(+, length.(initθ))]
 # sep = [acum[i]+1 : acum[i+1] for i in 1:length(acum)-1]
