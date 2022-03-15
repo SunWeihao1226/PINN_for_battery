@@ -21,8 +21,10 @@ L_p = 0.4444
 L_n = 0.4444
 I = 1.0
 
-# Discretization parameters
-dt = 0.1; dr = 0.1
+# Discretization parameters 
+dt = 0.1            # Value to change! It has to be the same as the dt in pinn_spm.jl.
+dr = dt
+
 order = 2
 
 # Analytic solution for boundary conditions
@@ -60,12 +62,15 @@ prob = ModelingToolkit.discretize(pdesys, discretization)
 # Solution of the ODE system
 sol = solve(prob,Tsit5())
 
+# Extract solutions of concentrations
+iter = trunc(Int, (1/dt+1))
+
 sol_c_sn_dt = []
 sol_c_sp_dt = []
-for i in (1:11)
+for i in (1:iter)
     # println(sol[11*(i-1)+1:11*(i)])
-    append!(sol_c_sn_dt, [sol[11*(i-1)+1:11*(i)]])
-    append!(sol_c_sp_dt, [sol[121+(11*(i-1)+1):121+11*(i)]])
+    append!(sol_c_sn_dt, [sol[iter*(i-1)+1:iter*(i)]])
+    append!(sol_c_sp_dt, [sol[iter^2+(iter*(i-1)+1):iter^2+iter*(i)]])
     i=i+1
 end
 

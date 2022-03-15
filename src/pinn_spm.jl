@@ -5,6 +5,13 @@ using NeuralPDE, Flux, ModelingToolkit, GalacticOptim, Optim, DiffEqFlux
 using Quadrature,Cubature,Plots
 import ModelingToolkit: Interval, infimum, supremum
 
+# Setting Parameters for PINN before Running:
+max_iters = 3000   # number of iterations
+n_dim = 15         # dimension of layers
+dt = 0.1           # discretization
+# End Setting
+
+
 @parameters t, r
 @variables c_sp(..), c_sn(..)
 Dt = Differential(t)
@@ -20,6 +27,7 @@ y_p = 2.0501
 L_p = 0.4444
 L_n = 0.4444
 I = 1.0
+
 
 
 # Equations
@@ -45,13 +53,12 @@ domains = [
     r ∈ Interval(0.0, 1.0),
 ]
 
-# Discretization
-dt = 0.1
+
 
 
 # Neural network
 input_ = length(domains)
-n = 15
+n = n_dim
 chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:2]
 initθ = map(c -> Float64.(c), DiffEqFlux.initial_params.(chain))
 # initθ = Float64.(DiffEqFlux.initial_params(chain))
@@ -75,14 +82,12 @@ cb = function (p,l)
     return false
 end
 
-res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=100)
+res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=max_iters)
 
 phi = discretization.phi
 
 
 ts,rs = [infimum(d.domain):dt:supremum(d.domain) for d in domains]
-# ts=[0:0.1:1]
-# rs=[0:0.1:1]
 x_axis = collect(ts)
 
 # acum =  [0;accumulate(+, length.(initθ))]
@@ -96,12 +101,14 @@ c_sp_predict  = [phi[1]([t,r],minimizers_[1])[1] for t in ts  for r in rs]
 c_sn_predict  = [phi[2]([t,r],minimizers_[2])[1] for t in ts  for r in rs]
 
 # Extract dt and dr from two prediction variables
+iter = trunc(Int, (1/dt+1))
+
 pred_c_sp_row = []
 pred_c_sn_row = []
-for j in (1:11)
-    for k in (1:11)
-        append!(pred_c_sp_row, c_sp_predict[j+11*(k-1)])
-        append!(pred_c_sn_row, c_sn_predict[j+11*(k-1)])
+for j in (1:iter)
+    for k in (1:iter)
+        append!(pred_c_sp_row, c_sp_predict[j+iter*(k-1)])
+        append!(pred_c_sn_row, c_sn_predict[j+iter*(k-1)])
         k = k+1
     end
     j = j+1
@@ -109,17 +116,17 @@ end
 
 pred_c_sp_dt = []
 pred_c_sn_dt = []
-for i in (1:11)
-    append!(pred_c_sp_dt, [pred_c_sp_row[11*(i-1)+1:11*(i)]])
-    append!(pred_c_sn_dt, [pred_c_sn_row[11*(i-1)+1:11*(i)]])
+for i in (1:iter)
+    append!(pred_c_sp_dt, [pred_c_sp_row[iter*(i-1)+1:iter*(i)]])
+    append!(pred_c_sn_dt, [pred_c_sn_row[iter*(i-1)+1:iter*(i)]])
     i=i+1
 end
 
 pred_c_sp_dr = []
 pred_c_sn_dr = []
-for m in (1:11)
-    append!(pred_c_sp_dr, [c_sp_predict[11*(m-1)+1:11*(m)]])
-    append!(pred_c_sn_dr, [c_sn_predict[11*(m-1)+1:11*(m)]])
+for m in (1:iter)
+    append!(pred_c_sp_dr, [c_sp_predict[iter*(m-1)+1:iter*(m)]])
+    append!(pred_c_sn_dr, [c_sn_predict[iter*(m-1)+1:iter*(m)]])
     m=m+1
 end
 
