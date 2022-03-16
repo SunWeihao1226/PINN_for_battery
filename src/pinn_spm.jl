@@ -6,7 +6,7 @@ using Quadrature,Cubature,Plots
 import ModelingToolkit: Interval, infimum, supremum
 
 # Setting Parameters for PINN before Running:
-max_iters = 3000   # number of iterations
+max_iters = 10000   # number of iterations
 n_dim = 15         # dimension of layers
 dt = 0.1           # discretization
 # End Setting
@@ -130,10 +130,6 @@ for m in (1:iter)
     m=m+1
 end
 
-
-
-# println(c_sp_predict)
-# println(c_sn_predict)
 
 
 
