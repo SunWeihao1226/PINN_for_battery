@@ -4,7 +4,7 @@
 
 This repository contains the code and results for our REX research project. The code builds a Physics Informed Neural Network (PINN) for a Single Particle Model (SPM) for Lithium-Ion batteries. The goal of the model is to solve the partial differential equations proposed by Marquis et al. [[4]](#3) to improve the current battery models. 
 
-The built-in PINN in the NeuralPDE package of Julia [[1]](#1) is used in this project. The `pinn_spm.jl` models our PINN to solve the positive and negative electrode concentrations (i.e., $C_{s,p}$ and $C_{s,n}$) with respect to scaled time `t` and particle radius `r`. The Neural Network contains three layers including the input and output, and the hidden layer consists of 15 neurons in this model. 10,000 iterations were performed to solve the equations. Both time and radius are discretized into 11 points in $[0,1]$.  The `ode_spm` provides the numerical discretization of the same equations using the MethodOfLines package. [[2]](#2) These results are useful to calculate errors. `analysis.jl` includes the pipeline of running the PINN model and MethodOfLines discretization, as well as the errors and plots for each result. The error is calculated as the absolute value of the difference of two results (i.e., $|C_{s,r\space MethodOfLine} - C_{s,r\space PINN}, r\in  \{n,p\}|$). The analytical plots are generated and saved in the `plots` folder. The gif plots are the animation of concentrations against $dt$ in changes of $dr$. The `c_sn_error` and `c_sp_error` are heat maps of errors. When $dr$ stays the same, the error is larger when $dt$ is larger.
+The built-in PINN in the NeuralPDE package of Julia [[1]](#1) is used in this project. The `pinn_spm.jl` models our PINN to solve the positive and negative electrode concentrations (i.e., `c_sp` and `c_sn`) with respect to scaled time `t` and particle radius `r`. The Neural Network contains three layers including the input and output, and the hidden layer consists of 15 neurons in this model. 10,000 iterations were performed to solve the equations. Both time and radius are discretized into 11 points in [0,1].  The `ode_spm` provides the numerical discretization of the same equations using the MethodOfLines package. [[2]](#2) These results are useful to calculate errors. `analysis.jl` includes the pipeline of running the PINN model and MethodOfLines discretization, as well as the errors and plots for each result. The error is calculated as the absolute value of the difference between results of PINN and MethodOfLine. The analytical plots are generated and saved in the `plots` folder. The gif plots are the animation of concentrations against `dt` in changes of `dr`. The `c_sn_error` and `c_sp_error` are heat maps of errors. When `dr` stays the same, the error is larger when `dt` is larger.
 
 The parameters in the models related to the network structure are changeable to make sure the code is robust, which makes the model is easy to maintain in future improvement and usage of solving similar equation problems. Detailed explanation is provided in the Usage part.
 
@@ -20,8 +20,6 @@ git clone https://github.com/luckyberen/PINN_for_battery.git```
 
 ## Contribute
 The other contributors of this Rex project: Maricela, Chloe, Harry, Emerald, Roy.
-
-
 
 
 ## reference
