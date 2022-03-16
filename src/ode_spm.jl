@@ -1,6 +1,5 @@
-## 2D Diffusion
+## Reference: https://github.com/SciML/MethodOfLines.jl
 
-# Dependencies
 using ModelingToolkit, MethodOfLines, LinearAlgebra, OrdinaryDiffEq, DomainSets
 using ModelingToolkit: Differential
 import DifferentialEquations
@@ -10,7 +9,8 @@ import DifferentialEquations
 @variables c_sp(..), c_sn(..)
 Dt = Differential(t)
 Dr = Differential(r)
-# Domain edges
+
+# Constants
 C_p = 0.0442
 C_n = 0.1134
 a_n = 1.8
@@ -28,7 +28,6 @@ dr = dt
 order = 2
 
 # Analytic solution for boundary conditions
-# analytic_sol_func(t, x, y) = exp(x + y) * cos(x + y + 4t)
 
 # Equation
 eqs = [
@@ -68,7 +67,6 @@ iter = trunc(Int, (1/dt+1))
 sol_c_sn_dt = []
 sol_c_sp_dt = []
 for i in (1:iter)
-    # println(sol[11*(i-1)+1:11*(i)])
     append!(sol_c_sn_dt, [sol[iter*(i-1)+1:iter*(i)]])
     append!(sol_c_sp_dt, [sol[iter^2+(iter*(i-1)+1):iter^2+iter*(i)]])
     i=i+1

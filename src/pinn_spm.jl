@@ -8,7 +8,7 @@ import ModelingToolkit: Interval, infimum, supremum
 # Setting Parameters for PINN before Running:
 max_iters = 10000   # number of iterations
 n_dim = 15         # dimension of layers
-dt = 0.1           # discretization
+dt = 0.1           # discretization. Here dr = dt
 # End Setting
 
 
@@ -54,14 +54,11 @@ domains = [
 ]
 
 
-
-
 # Neural network
 input_ = length(domains)
 n = n_dim
 chain = [FastChain(FastDense(input_, n, Flux.σ), FastDense(n,n,Flux.σ), FastDense(n,1)) for _ in 1:2]
 initθ = map(c -> Float64.(c), DiffEqFlux.initial_params.(chain))
-# initθ = Float64.(DiffEqFlux.initial_params(chain))
 
 _strategy = QuadratureTraining()
 discretization = PhysicsInformedNN(chain, _strategy, init_params=initθ)
@@ -69,7 +66,6 @@ discretization = PhysicsInformedNN(chain, _strategy, init_params=initθ)
 @named pde_system = PDESystem(eqs,bcs, domains, [t,r], [c_sp(t,r), c_sn(t,r)])
 prob = discretize(pde_system, discretization)
 sys_prob = symbolic_discretize(pde_system, discretization)
-
 
 
 # pde_inner_loss_functions = prob.f.f.loss_function.pde_loss_function.pde_loss_functions.contents
@@ -87,12 +83,11 @@ res = GalacticOptim.solve(prob,BFGS(); cb = cb, maxiters=max_iters)
 phi = discretization.phi
 
 
+# Discretization
+
 ts,rs = [infimum(d.domain):dt:supremum(d.domain) for d in domains]
 x_axis = collect(ts)
 
-# acum =  [0;accumulate(+, length.(initθ))]
-# sep = [acum[i]+1 : acum[i+1] for i in 1:length(acum)-1]
-# minimizers_ = [res.minimizer[s] for s in sep]
 minimizers_=[]
 append!(minimizers_, [res.minimizer[1:trunc(Int,size(res.minimizer)[1]/2)]])
 append!(minimizers_, [res.minimizer[trunc(Int,size(res.minimizer)[1]/2+1):size(res.minimizer)[1]]])
@@ -101,6 +96,7 @@ c_sp_predict  = [phi[1]([t,r],minimizers_[1])[1] for t in ts  for r in rs]
 c_sn_predict  = [phi[2]([t,r],minimizers_[2])[1] for t in ts  for r in rs]
 
 # Extract dt and dr from two prediction variables
+
 iter = trunc(Int, (1/dt+1))
 
 pred_c_sp_row = []
@@ -129,6 +125,7 @@ for m in (1:iter)
     append!(pred_c_sn_dr, [c_sn_predict[iter*(m-1)+1:iter*(m)]])
     m=m+1
 end
+
 
 
 

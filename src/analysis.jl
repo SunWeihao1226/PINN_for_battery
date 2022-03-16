@@ -17,7 +17,7 @@ for i in (1:iter)
 end 
 
 
-# Function to create the plot
+# Functions to create the plot
 function find_max(data)
     max = 0
     for i in (1:iter)
@@ -50,7 +50,7 @@ function drawPlt(data, title)
 end
 
 
-# Create plots for PINN predictions
+# Create and save plots for PINN predictions
 # Posivive and Negative Concentrations vs dt 
 
 plt_c_sp = drawPlt(pred_c_sp_dt, "Positive Concentration by PINN vs. dt")
@@ -58,14 +58,14 @@ plt_c_sn = drawPlt(pred_c_sn_dt, "Negative Concentration by PINN vs. dt")
 gif(plt_c_sp, "../plots/c_sp_predict.gif", fps=5)
 gif(plt_c_sn, "../plots/c_sn_predict.gif", fps=5)
 
-# Create Plots for MethidOfLine predictions
+# Create and save plots for MethidOfLine predictions
 
 plt_c_sp_mol = drawPlt(sol_c_sp_dt, "Positive Concentration by MoL vs. dt")
 plt_c_sn_mol = drawPlt(sol_c_sn_dt, "Negative Concentration by MoL vs. dt")
 gif(plt_c_sp_mol, "../plots/c_sp_sol.gif", fps=5)
 gif(plt_c_sn_mol, "../plots/c_sn_sol.gif", fps=5)
 
-# Create error heat plots
+# Create and save error heat plots
 
 err_csp_plt = plot(ts, rs, err_c_sp, size=(800,800), linetype=:contourf, title = "c_sp Error", xlabel = "dt", ylabel = "dr", xticks=x_ticks, yticks = x_ticks)
 err_csn_plt = plot(ts, rs, err_c_sn, size=(800,800), linetype=:contourf, title = "c_sn Error", xlabel = "dt", ylabel = "dr", xticks=x_ticks, yticks = x_ticks)
@@ -73,10 +73,4 @@ savefig(err_csp_plt,"../plots/c_sp_error.png")
 savefig(err_csn_plt,"../plots/c_sn_error.png")
 
 
-# Save plots
-# savefig(plt_c_sp,"../plots/c_sp_predict.")
-# savefig(plt_c_sn,"../plots/c_sn_predict.png")
-# savefig(plt_c_sp_mol,"../plots/c_sp_sol.png")
-# savefig(plt_c_sn_mol,"../plots/c_sn_sol.png")
-# savefig(err_csp_plt,"../plots/c_sp_error.png")
-# savefig(err_csn_plt,"../plots/c_sn_error.png")
+
